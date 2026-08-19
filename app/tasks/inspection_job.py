@@ -67,6 +67,30 @@ def _record_model(inspection: Inspection, detector=None) -> None:
 
 
 def process_inspection(inspection_id: str) -> None:
+    """Run the pipeline and persist unexpected worker failures as terminal state."""
+    try:
+        _process_inspection(inspection_id)
+    except Exception as exc:
+        db.session.rollback()
+        inspection = db.session.get(Inspection, parse_uuid_or_404(inspection_id, "Inspection"))
+        if inspection is None:
+            logger.exception("Inspection vanished after processing failed: %s", inspection_id)
+            return
+
+        try:
+            _fail(
+                inspection,
+                "PROCESSING_FAILED",
+                str(exc),
+                time.perf_counter(),
+            )
+        except Exception:
+            db.session.rollback()
+            logger.exception("Could not record inspection failure: %s", inspection_id)
+        logger.exception("Inspection processing failed: %s", inspection_id)
+
+
+def _process_inspection(inspection_id: str) -> None:
     """Run the whole pipeline for one inspection. Safe to call more than once."""
     inspection = db.session.get(Inspection, parse_uuid_or_404(inspection_id, "Inspection"))
     if inspection is None:
@@ -319,7 +343,7 @@ def _fail(
     )
 
 
-def requeue_stuck_inspections() -> int:
+def requeue_stuck_inspections() -> list[str]:
     """Re-queue inspections left mid-flight by a restart.
 
     Jobs live in the process, so a crash or redeploy would otherwise leave an
@@ -336,4 +360,4 @@ def requeue_stuck_inspections() -> int:
         db.session.commit()
         logger.warning("Re-queued %s inspection(s) left in processing by a restart", len(stuck))
 
-    return len(stuck)
+    return [str(inspection.id) for inspection in stuck]

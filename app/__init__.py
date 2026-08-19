@@ -11,7 +11,8 @@ from app.errors import register_error_handlers
 from app.extensions import cors, db, jwt, limiter
 from app.logging_config import configure_logging
 from app.services.upload_service import configure_cloudinary
-from app.tasks.queue import init_task_queue
+from app.tasks.inspection_job import process_inspection, requeue_stuck_inspections
+from app.tasks.queue import enqueue, init_task_queue
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,9 @@ def create_app(config_object=None) -> Flask:
 
     if not app.config.get("TESTING"):
         init_task_queue(app)
+        with app.app_context():
+            for inspection_id in requeue_stuck_inspections():
+                enqueue(process_inspection, inspection_id)
 
     @app.get("/")
     def root():

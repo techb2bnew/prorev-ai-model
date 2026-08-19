@@ -498,3 +498,25 @@ The response is **202** with the inspection id; poll
 History can be filtered by `?customer_name=` (partial, case-insensitive) and
 `?vehicle_type=` (exact), alongside `?status=`, `?damage_type=`, `?date_from=`
 and `?date_to=`.
+
+
+
+
+
+
+
+
+
+
+
+cd /var/www/html/prorev-ai-model
+sudo systemctl restart prorev-ai-model
+
+
+
+test@yopmail.
+
+
+
+sudo systemctl stop prorev-ai-model
+sudo -u postgres psql -d dent_detection
