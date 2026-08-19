@@ -1,0 +1,64 @@
+{
+  "_comment": "Two separate things live here. (1) 'damage_score' is the aggregate 0-100 score defined in DOCUMENTATION.md section 4, implemented exactly as documented. (2) 'classes' assigns a per-detection severity band, which the model does not output - it is derived from area and confidence. Both are configuration so they can be calibrated without a release.",
+
+  "damage_score": {
+    "_formula": "min(100, (critical_count * critical_weight) + (damage_count * damage_weight) + min(area_cap, total_area_percent * area_multiplier))",
+    "critical_weight": 25,
+    "damage_weight": 8,
+    "area_multiplier": 4,
+    "area_cap": 40,
+    "max_score": 100,
+
+    "_critical_classes_note": "DOCUMENTATION.md gives the formula but does not say which classes count as critical. These three are treated as critical because they affect roadworthiness and legality rather than only appearance. Confirm or change this list.",
+    "critical_classes": ["glass_shatter", "lamp_broken", "tire_flat"],
+
+    "bands": [
+      { "label": "none",     "min_score": 0,  "max_score": 0 },
+      { "label": "minor",    "min_score": 1,  "max_score": 24 },
+      { "label": "moderate", "min_score": 25, "max_score": 59 },
+      { "label": "severe",   "min_score": 60, "max_score": 100 }
+    ]
+  },
+
+  "_per_detection_comment": "Checked severe -> moderate -> minor; first match wins. A rule matches only when every condition in it is satisfied. min_area_ratio is the damaged area as a fraction of the whole image (0-1), min_count is how many detections of the same class are in that image.",
+  "fallback": "minor",
+
+  "classes": {
+    "scratch": {
+      "severe":   { "min_area_ratio": 0.06 },
+      "moderate": { "min_area_ratio": 0.015 },
+      "minor":    { "min_area_ratio": 0.0 }
+    },
+    "dent": {
+      "severe":   { "min_area_ratio": 0.05 },
+      "moderate": { "min_area_ratio": 0.012 },
+      "minor":    { "min_area_ratio": 0.0 }
+    },
+    "crack": {
+      "severe":   { "min_area_ratio": 0.03 },
+      "moderate": { "min_area_ratio": 0.008 },
+      "minor":    { "min_area_ratio": 0.0 }
+    },
+    "glass_shatter": {
+      "severe":   { "min_area_ratio": 0.02 },
+      "moderate": { "min_area_ratio": 0.005 },
+      "minor":    { "min_area_ratio": 0.0 }
+    },
+    "lamp_broken": {
+      "severe":   { "min_confidence": 0.7 },
+      "moderate": { "min_confidence": 0.45 },
+      "minor":    { "min_area_ratio": 0.0 }
+    },
+    "tire_flat": {
+      "severe":   { "min_confidence": 0.6 },
+      "moderate": { "min_confidence": 0.4 },
+      "minor":    { "min_area_ratio": 0.0 }
+    }
+  },
+
+  "default": {
+    "severe":   { "min_area_ratio": 0.05 },
+    "moderate": { "min_area_ratio": 0.01 },
+    "minor":    { "min_area_ratio": 0.0 }
+  }
+}

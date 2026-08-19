@@ -1,0 +1,24 @@
+{
+  "_comment": "The six classes the supplied YOLO11m model was trained on (CarDD dataset). Keys on the left are the label strings the model emits, lowercased and with spaces/hyphens folded to underscores; values are our internal class keys. Verified against best.pt - the model reports these via model.names, so index order is read from the model at runtime and never hardcoded here.",
+
+  "aliases": {
+    "dent": "dent",
+    "dents": "dent",
+    "scratch": "scratch",
+    "scratches": "scratch",
+    "crack": "crack",
+    "cracks": "crack",
+    "glass_shatter": "glass_shatter",
+    "glass_shattered": "glass_shatter",
+    "shattered_glass": "glass_shatter",
+    "lamp_broken": "lamp_broken",
+    "broken_lamp": "lamp_broken",
+    "lamp_break": "lamp_broken",
+    "tire_flat": "tire_flat",
+    "flat_tire": "tire_flat",
+    "tyre_flat": "tire_flat",
+    "flat_tyre": "tire_flat"
+  },
+
+  "_unmapped_policy": "A label the model emits that is not listed above is kept in the stored raw output but left out of the report, and logged at INFO so it is visible. Adding a class later is a change to this file only."
+}
