@@ -1,5 +1,7 @@
+from datetime import datetime, timezone
+
 from flask import Blueprint, jsonify
-from flask_jwt_extended import get_jwt_identity, jwt_required
+from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
 
 from app.api.deps import current_user
 from app.extensions import limiter
@@ -46,3 +48,26 @@ def refresh():
 @jwt_required()
 def me():
     return jsonify({"user": current_user().to_dict()})
+
+
+@bp.post("/logout")
+@jwt_required()
+def logout():
+    """Revoke the access token used on this request. It becomes unusable
+    immediately, rather than lingering valid until it expires on its own."""
+    claims = get_jwt()
+    expires_at = datetime.fromtimestamp(claims["exp"], tz=timezone.utc)
+    auth_service.revoke_token(claims["jti"], expires_at)
+    return jsonify({"message": "Logged out."})
+
+
+@bp.delete("/me")
+@jwt_required()
+def delete_account():
+    """Soft-delete the caller's own account and revoke the token used to do it."""
+    user = current_user()
+    claims = get_jwt()
+    expires_at = datetime.fromtimestamp(claims["exp"], tz=timezone.utc)
+    auth_service.revoke_token(claims["jti"], expires_at)
+    auth_service.delete_account(user)
+    return "", 204

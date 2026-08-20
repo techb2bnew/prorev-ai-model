@@ -108,6 +108,41 @@ class TestAuth:
         assert response.status_code == 200
         assert response.get_json()["user"]["email"] == "driver@example.com"
 
+    def test_logout_requires_a_token(self, client):
+        assert client.post("/api/v1/auth/logout").status_code == 401
+
+    def test_logout_revokes_the_token(self, client):
+        headers = auth_headers(client)
+
+        assert client.get("/api/v1/auth/me", headers=headers).status_code == 200
+        assert client.post("/api/v1/auth/logout", headers=headers).status_code == 200
+        # The same token is now rejected, not just expired-eventually.
+        assert client.get("/api/v1/auth/me", headers=headers).status_code == 401
+
+    def test_logout_twice_is_not_an_error(self, client):
+        headers = auth_headers(client)
+        assert client.post("/api/v1/auth/logout", headers=headers).status_code == 200
+
+    def test_delete_account_requires_a_token(self, client):
+        assert client.delete("/api/v1/auth/me").status_code == 401
+
+    def test_delete_account_removes_access(self, client):
+        headers = auth_headers(client, email="leaving@example.com")
+
+        response = client.delete("/api/v1/auth/me", headers=headers)
+        assert response.status_code == 204
+
+        # The token used to delete the account no longer works either.
+        assert client.get("/api/v1/auth/me", headers=headers).status_code == 401
+
+    def test_deleted_account_cannot_log_in_again(self, client):
+        email, password = "gone@example.com", "Passw0rd123"
+        headers = auth_headers(client, email=email, password=password)
+        client.delete("/api/v1/auth/me", headers=headers)
+
+        response = client.post("/api/v1/auth/login", json={"email": email, "password": password})
+        assert response.status_code == 401
+
 
 class TestDamageTypes:
     def test_returns_the_six_model_classes(self, client):

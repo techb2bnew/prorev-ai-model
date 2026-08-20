@@ -135,6 +135,8 @@ in code, so they can be tuned without a release:
 | `POST` | `/api/v1/auth/login` | – | Get tokens |
 | `POST` | `/api/v1/auth/refresh` | refresh | Rotate access token |
 | `GET` | `/api/v1/auth/me` | ✓ | Current user |
+| `POST` | `/api/v1/auth/logout` | ✓ | Revoke the access token used on this request |
+| `DELETE` | `/api/v1/auth/me` | ✓ | Soft-delete the caller's own account |
 | `POST` | `/api/v1/uploads/signature` | ✓ | Signed Cloudinary upload params |
 | `POST` | `/api/v1/inspections` | ✓ | Submit photos by side → 202 ([shape](#submitting-an-inspection)) |
 | `GET` | `/api/v1/inspections` | ✓ | History, paginated and filterable by customer, vehicle type, status, damage type, date |

@@ -2,6 +2,7 @@
 
 import logging
 
+import sqlalchemy as sa
 from flask import Flask, jsonify
 
 from app.api import register_blueprints
@@ -10,6 +11,7 @@ from app.config import get_config
 from app.errors import register_error_handlers
 from app.extensions import cors, db, jwt, limiter
 from app.logging_config import configure_logging
+from app.models import TokenBlocklist
 from app.services.upload_service import configure_cloudinary
 from app.tasks.inspection_job import process_inspection, requeue_stuck_inspections
 from app.tasks.queue import enqueue, init_task_queue
@@ -70,6 +72,15 @@ def create_app(config_object=None) -> Flask:
 
 def _register_jwt_handlers() -> None:
     """Make JWT rejections use the same error envelope as everything else."""
+
+    @jwt.token_in_blocklist_loader
+    def _is_token_revoked(_jwt_header, jwt_payload: dict) -> bool:
+        return (
+            db.session.execute(
+                sa.select(TokenBlocklist.id).where(TokenBlocklist.jti == jwt_payload["jti"])
+            ).first()
+            is not None
+        )
 
     @jwt.unauthorized_loader
     def _missing_token(reason: str):

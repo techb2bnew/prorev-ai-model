@@ -21,6 +21,7 @@ from app.models.enums import (
 )
 from app.models.inspection import Inspection
 from app.models.inspection_image import InspectionImage
+from app.models.token_blocklist import TokenBlocklist
 from app.models.user import User
 
 __all__ = [
@@ -34,6 +35,7 @@ __all__ = [
     "Detection",
     "Inspection",
     "InspectionImage",
+    "TokenBlocklist",
     "User",
     "ImageStatus",
     "InspectionStatus",
