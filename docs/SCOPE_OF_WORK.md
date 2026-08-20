@@ -6,7 +6,7 @@
 
 ---
 
-## 1. Main idea
+## 1.Main idea
 
 A user uploads 4–5 photographs of a car. An ML model looks at those photographs, finds the damage, and the system returns a damage report. Every report is saved so the user can look at their past inspections later.
 

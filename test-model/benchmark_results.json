@@ -1,0 +1,80 @@
+{
+  "environment": {
+    "torch_threads": 4,
+    "cpu_count": 4,
+    "torch_version": "2.13.0+cpu",
+    "cuda_available": false,
+    "device_used": "cpu"
+  },
+  "model_load_ms": 282.29,
+  "per_image_at_production_settings": [
+    {
+      "image": "test_1.jpg",
+      "orientation_convert_ms": 1.56,
+      "to_array_ms": 3.61,
+      "quality_analysis_ms": 66.29,
+      "inference_ms": 2760.05,
+      "fallback_tta_ms": null,
+      "detections_found": 12,
+      "total_ms": 2831.51
+    },
+    {
+      "image": "test_2.jpg",
+      "orientation_convert_ms": 4.98,
+      "to_array_ms": 2.52,
+      "quality_analysis_ms": 13.03,
+      "inference_ms": 2733.98,
+      "fallback_tta_ms": null,
+      "detections_found": 7,
+      "total_ms": 2754.51
+    },
+    {
+      "image": "test_3.jpg",
+      "orientation_convert_ms": 7.38,
+      "to_array_ms": 5.03,
+      "quality_analysis_ms": 21.09,
+      "inference_ms": 3934.95,
+      "fallback_tta_ms": null,
+      "detections_found": 18,
+      "total_ms": 3968.45
+    },
+    {
+      "image": "test_4.jpg",
+      "orientation_convert_ms": 7.4,
+      "to_array_ms": 5.05,
+      "quality_analysis_ms": 19.3,
+      "inference_ms": 2730.31,
+      "fallback_tta_ms": null,
+      "detections_found": 3,
+      "total_ms": 2762.06
+    },
+    {
+      "image": "test_5.jpg",
+      "orientation_convert_ms": 5.61,
+      "to_array_ms": 3.59,
+      "quality_analysis_ms": 13.41,
+      "inference_ms": 2980.02,
+      "fallback_tta_ms": null,
+      "detections_found": 11,
+      "total_ms": 3002.63
+    }
+  ],
+  "sequential_total_ms_no_network": 15319.16,
+  "augment_cost": {
+    "single_pass_ms_avg": 2785.61,
+    "tta_pass_ms_avg": 5891.45,
+    "multiplier": 2.11
+  },
+  "imgsz_comparison_ms": {
+    "1024": 2951.77,
+    "768": 1559.82,
+    "640": 1035.09,
+    "512": 732.41
+  },
+  "batched_vs_sequential_ms": {
+    "sequential_ms": 14529.99,
+    "batched_ms": 19623.76
+  },
+  "sequential_total_seconds_no_network": 15.32,
+  "avg_ms_per_image": 3063.83
+}
