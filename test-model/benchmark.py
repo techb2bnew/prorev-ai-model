@@ -44,6 +44,10 @@ def now_ms() -> float:
     return time.perf_counter() * 1000
 
 
+def plural(n: int) -> str:
+    return "image" if n == 1 else "images"
+
+
 # --- Pre-processing steps, copied from app/inference/preprocess.py and
 # app/inference/ultralytics_adapter.py so this script has no dependency on the
 # Flask app (which needs DB/env config just to import). ---
@@ -69,12 +73,33 @@ def analyze_image_quality(image_rgb: np.ndarray) -> dict:
     return {"blur_score": round(blur_score, 2), "brightness": round(brightness, 2)}
 
 
-def load_test_images() -> list[tuple[str, Image.Image]]:
-    paths = sorted(IMAGES_DIR.glob("*.jpg"))
-    if not paths:
-        raise SystemExit(
-            f"No test images found in {IMAGES_DIR}. Run generate_test_images.py first."
-        )
+def load_test_images(
+    image_paths: list[str] | None = None, count: int | None = None
+) -> list[tuple[str, Image.Image]]:
+    """Loads specific image(s) if given, else every image in images/, capped at
+    `count` if given (e.g. --count 1 to time a single image)."""
+    if image_paths:
+        paths = [Path(p) for p in image_paths]
+        missing = [p for p in paths if not p.is_file()]
+        if missing:
+            raise SystemExit(f"Image(s) not found: {', '.join(str(p) for p in missing)}")
+    else:
+        paths = sorted(IMAGES_DIR.glob("*.jpg"))
+        if not paths:
+            raise SystemExit(
+                f"No test images found in {IMAGES_DIR}. Run generate_test_images.py first, "
+                "or pass --image <path> to test your own image(s)."
+            )
+        if count is not None:
+            if count < 1:
+                raise SystemExit("--count must be at least 1.")
+            if count > len(paths):
+                print(
+                    f"Only {len(paths)} test image(s) available in {IMAGES_DIR}; "
+                    f"using all of them instead of {count}."
+                )
+            paths = paths[:count]
+
     return [(p.name, Image.open(p)) for p in paths]
 
 
@@ -225,6 +250,20 @@ def main() -> None:
         help="What the frontend actually measured for this many images, so the "
         "report can say what share of it the model accounts for.",
     )
+    parser.add_argument(
+        "--count",
+        type=int,
+        default=None,
+        help="Only use this many of the images in images/ (e.g. 1 for a single-image "
+        "timing run). Default: use all of them. Ignored if --image is given.",
+    )
+    parser.add_argument(
+        "--image",
+        action="append",
+        default=None,
+        help="Test this specific image file instead of images/*.jpg. Repeat for "
+        "multiple images, e.g. --image a.jpg --image b.jpg.",
+    )
     args = parser.parse_args()
 
     DEVICE = 0 if torch.cuda.is_available() else "cpu"
@@ -246,8 +285,9 @@ def main() -> None:
     print(f"Model load: {load_ms:.0f} ms (happens once per worker process, not per request)")
     report["model_load_ms"] = round(load_ms, 2)
 
-    images = load_test_images()
-    print(f"Loaded {len(images)} test images from {IMAGES_DIR}")
+    images = load_test_images(args.image, args.count)
+    source = ", ".join(name for name, _ in images) if args.image else str(IMAGES_DIR)
+    print(f"Loaded {len(images)} test image(s) from {source}")
 
     section("Warm-up pass (first predict() call pays a one-off graph/JIT cost)")
     warmup_np = np.array(images[0][1].convert("RGB"))
@@ -294,7 +334,7 @@ def main() -> None:
     report["per_image_at_production_settings"] = per_image_results
     total_sequential_ms = sum(r["total_ms"] for r in per_image_results)
     print(
-        f"\nSequential total for {len(images)} images (no network, no DB): "
+        f"\nSequential total for {len(images)} {plural(len(images))} (no network, no DB): "
         f"{total_sequential_ms:.0f} ms  ({total_sequential_ms / 1000:.1f} s)"
     )
     report["sequential_total_ms_no_network"] = round(total_sequential_ms, 2)
@@ -351,18 +391,18 @@ def main() -> None:
 
     t0 = now_ms()
     for arr in arrays:
-        model.predict(source=arr, imgsz=INPUT_SIZE, conf=DETECTION_FLOOR, iou=IOU_THRESHOLD, device="cpu", verbose=False)
+        model.predict(source=arr, imgsz=INPUT_SIZE, conf=DETECTION_FLOOR, iou=IOU_THRESHOLD, device=DEVICE, verbose=False)
     sequential_ms = now_ms() - t0
 
     t0 = now_ms()
-    model.predict(source=arrays, imgsz=INPUT_SIZE, conf=DETECTION_FLOOR, iou=IOU_THRESHOLD, device="cpu", verbose=False)
+    model.predict(source=arrays, imgsz=INPUT_SIZE, conf=DETECTION_FLOOR, iou=IOU_THRESHOLD, device=DEVICE, verbose=False)
     batched_ms = now_ms() - t0
 
     print(f"Sequential ({len(arrays)} calls): {sequential_ms:.0f} ms")
-    print(f"Batched (1 call, {len(arrays)} images): {batched_ms:.0f} ms")
+    print(f"Batched (1 call, {len(arrays)} {plural(len(arrays))}): {batched_ms:.0f} ms")
     if batched_ms < sequential_ms:
         print(f"-> Batching would save ~{sequential_ms - batched_ms:.0f} ms ({(1 - batched_ms / sequential_ms) * 100:.0f}%) "
-              "on CPU inference alone for a 5-image inspection.")
+              f"on CPU inference alone for a {len(arrays)}-image inspection.")
     else:
         print("-> Batching did not help on this CPU; sequential is as fast or faster.")
     report["batched_vs_sequential_ms"] = {
@@ -374,13 +414,13 @@ def main() -> None:
     section("Summary")
     avg_per_image = total_sequential_ms / len(images)
     print(f"Model + pre-processing only, no network/DB: {avg_per_image:.0f} ms/image avg, "
-          f"{total_sequential_ms / 1000:.1f}s for {len(images)} images.")
+          f"{total_sequential_ms / 1000:.1f}s for {len(images)} {plural(len(images))}.")
 
     observed_seconds = args.observed_seconds
     if observed_seconds:
         share = (total_sequential_ms / 1000) / observed_seconds * 100
         print(
-            f"Observed frontend latency: {observed_seconds:.1f}s for {len(images)} images. "
+            f"Observed frontend latency: {observed_seconds:.1f}s for {len(images)} {plural(len(images))}. "
             f"The model accounts for ~{share:.0f}% of that."
         )
         report["observed_seconds"] = observed_seconds

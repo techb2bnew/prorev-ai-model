@@ -6,75 +6,75 @@
     "cuda_available": false,
     "device_used": "cpu"
   },
-  "model_load_ms": 282.29,
+  "model_load_ms": 200.35,
   "per_image_at_production_settings": [
     {
       "image": "test_1.jpg",
-      "orientation_convert_ms": 1.56,
-      "to_array_ms": 3.61,
-      "quality_analysis_ms": 66.29,
-      "inference_ms": 2760.05,
+      "orientation_convert_ms": 1.11,
+      "to_array_ms": 29.8,
+      "quality_analysis_ms": 25.46,
+      "inference_ms": 2806.51,
       "fallback_tta_ms": null,
       "detections_found": 12,
-      "total_ms": 2831.51
+      "total_ms": 2862.88
     },
     {
       "image": "test_2.jpg",
-      "orientation_convert_ms": 4.98,
-      "to_array_ms": 2.52,
-      "quality_analysis_ms": 13.03,
-      "inference_ms": 2733.98,
+      "orientation_convert_ms": 5.3,
+      "to_array_ms": 2.1,
+      "quality_analysis_ms": 10.68,
+      "inference_ms": 2584.82,
       "fallback_tta_ms": null,
       "detections_found": 7,
-      "total_ms": 2754.51
+      "total_ms": 2602.9
     },
     {
       "image": "test_3.jpg",
-      "orientation_convert_ms": 7.38,
-      "to_array_ms": 5.03,
-      "quality_analysis_ms": 21.09,
-      "inference_ms": 3934.95,
+      "orientation_convert_ms": 7.2,
+      "to_array_ms": 4.85,
+      "quality_analysis_ms": 16.97,
+      "inference_ms": 4020.59,
       "fallback_tta_ms": null,
       "detections_found": 18,
-      "total_ms": 3968.45
+      "total_ms": 4049.61
     },
     {
       "image": "test_4.jpg",
-      "orientation_convert_ms": 7.4,
-      "to_array_ms": 5.05,
-      "quality_analysis_ms": 19.3,
-      "inference_ms": 2730.31,
+      "orientation_convert_ms": 7.37,
+      "to_array_ms": 5.14,
+      "quality_analysis_ms": 18.14,
+      "inference_ms": 2924.31,
       "fallback_tta_ms": null,
       "detections_found": 3,
-      "total_ms": 2762.06
+      "total_ms": 2954.96
     },
     {
       "image": "test_5.jpg",
-      "orientation_convert_ms": 5.61,
-      "to_array_ms": 3.59,
-      "quality_analysis_ms": 13.41,
-      "inference_ms": 2980.02,
+      "orientation_convert_ms": 5.68,
+      "to_array_ms": 3.91,
+      "quality_analysis_ms": 11.43,
+      "inference_ms": 4300.07,
       "fallback_tta_ms": null,
       "detections_found": 11,
-      "total_ms": 3002.63
+      "total_ms": 4321.09
     }
   ],
-  "sequential_total_ms_no_network": 15319.16,
+  "sequential_total_ms_no_network": 16791.44,
   "augment_cost": {
-    "single_pass_ms_avg": 2785.61,
-    "tta_pass_ms_avg": 5891.45,
-    "multiplier": 2.11
+    "single_pass_ms_avg": 3518.73,
+    "tta_pass_ms_avg": 6933.36,
+    "multiplier": 1.97
   },
   "imgsz_comparison_ms": {
-    "1024": 2951.77,
-    "768": 1559.82,
-    "640": 1035.09,
-    "512": 732.41
+    "1024": 3593.93,
+    "768": 1753.55,
+    "640": 1314.04,
+    "512": 967.01
   },
   "batched_vs_sequential_ms": {
-    "sequential_ms": 14529.99,
-    "batched_ms": 19623.76
+    "sequential_ms": 15862.49,
+    "batched_ms": 20146.12
   },
-  "sequential_total_seconds_no_network": 15.32,
-  "avg_ms_per_image": 3063.83
+  "sequential_total_seconds_no_network": 16.79,
+  "avg_ms_per_image": 3358.29
 }

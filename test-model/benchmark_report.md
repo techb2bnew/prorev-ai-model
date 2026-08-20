@@ -1,36 +1,36 @@
 # Model speed benchmark report
 
 - Device used: **cpu** (CPU-only, 4 CPUs, torch 2.13.0+cpu, 4 torch threads)
-- Model load time: 282 ms (once per worker process)
+- Model load time: 200 ms (once per worker process)
 
 ## Per-image timing (production settings, imgsz=1024)
 
 | Image | Prep (ms) | Inference (ms) | TTA fallback (ms) | Detections | Total (ms) |
 |---|---|---|---|---|---|
-| test_1.jpg | 71 | 2760 | - | 12 | 2832 |
-| test_2.jpg | 21 | 2734 | - | 7 | 2755 |
-| test_3.jpg | 34 | 3935 | - | 18 | 3968 |
-| test_4.jpg | 32 | 2730 | - | 3 | 2762 |
-| test_5.jpg | 23 | 2980 | - | 11 | 3003 |
+| test_1.jpg | 56 | 2807 | - | 12 | 2863 |
+| test_2.jpg | 18 | 2585 | - | 7 | 2603 |
+| test_3.jpg | 29 | 4021 | - | 18 | 4050 |
+| test_4.jpg | 31 | 2924 | - | 3 | 2955 |
+| test_5.jpg | 21 | 4300 | - | 11 | 4321 |
 
-**Sequential total for 5 images, model only (no network/DB): 15.3s** (3064 ms/image avg)
+**Sequential total for 5 images, model only (no network/DB): 16.8s** (3358 ms/image avg)
 
 ## TTA fallback cost (augment=True, fires when nothing found at the 0.15 floor)
 
-Single pass: 2786 ms avg  |  TTA pass: 5891 ms avg  |  **2.1x** the single pass, paid *in addition* to it.
+Single pass: 3519 ms avg  |  TTA pass: 6933 ms avg  |  **2.0x** the single pass, paid *in addition* to it.
 
 ## Inference time vs. imgsz
 
 | imgsz | ms (avg) |
 |---|---|
-| 1024 | 2952 |
-| 768 | 1560 |
-| 640 | 1035 |
-| 512 | 732 |
+| 1024 | 3594 |
+| 768 | 1754 |
+| 640 | 1314 |
+| 512 | 967 |
 
 ## Batched vs. sequential predict()
 
-Sequential: 14530 ms  |  Batched: 19624 ms  -> batching was **slower or no better** on this hardware.
+Sequential: 15862 ms  |  Batched: 20146 ms  -> batching was **slower or no better** on this hardware.
 
 ## Bottom line
 
