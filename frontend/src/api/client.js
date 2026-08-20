@@ -6,6 +6,8 @@
  * the "API Activity" panel works - no call can bypass it.
  */
 
+import { randomUUID } from '../utils/uuid'
+
 const API_BASE = '/api/v1'
 
 let authToken = localStorage.getItem('dd_token') || null
@@ -45,7 +47,7 @@ export class ApiError extends Error {
 }
 
 function emit(entry) {
-  if (logListener) logListener({ ...entry, id: crypto.randomUUID(), at: new Date() })
+  if (logListener) logListener({ ...entry, id: randomUUID(), at: new Date() })
 }
 
 async function request(method, path, { body, auth = true, headers = {} } = {}) {

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Alert, ErrorAlert, Spinner } from '../components/common.jsx'
 import * as api from '../api/client.js'
+import { randomUUID } from '../utils/uuid'
 
 const MAX_BYTES = 10 * 1024 * 1024
 const MIN_DIMENSION = 320
@@ -161,7 +162,7 @@ export default function NewInspectionPage() {
           settings: { preset },
         },
         // An idempotency key makes a retry or double click safe.
-        `ui-${crypto.randomUUID()}`,
+        `ui-${randomUUID()}`,
       )
       setInspection(created)
 
