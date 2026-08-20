@@ -98,8 +98,8 @@ The ones that change behaviour most:
 | `MODEL_PATH` | `models/best.pt` | The weights file |
 | `MODEL_CONFIDENCE_THRESHOLD` | `0.35` | Balanced. `0.22` sensitive, `0.50` strict |
 | `MODEL_IOU_THRESHOLD` | `0.45` | Overlap threshold for class-aware NMS |
-| `MODEL_INPUT_SIZE` | `1024` | Lower is faster but misses fine scratches |
-| `MODEL_FALLBACK_ENABLED` | `true` | Retry lower with TTA when a pass finds nothing |
+| `MODEL_INPUT_SIZE` | `640` | Lower is faster but misses fine scratches |
+| `MODEL_FALLBACK_ENABLED` | `false` | Retry lower with TTA when a pass finds nothing - ~2x cost when it fires |
 | `MODEL_USE_CLAHE` | `false` | Contrast boost for glare and shadow |
 | `INFERENCE_WORKERS` | `2` | Each worker holds its own copy of the model |
 

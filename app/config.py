@@ -81,21 +81,26 @@ class BaseConfig:
     CLOUDINARY_UPLOAD_FOLDER = os.getenv("CLOUDINARY_UPLOAD_FOLDER", "dent-inspections")
 
     # --- Model ---
-    # Defaults follow DOCUMENTATION.md: conf 0.35, iou 0.45, imgsz 1024.
+    # imgsz 640 and the TTA fallback off by default match the faster
+    # `dent-detection` sibling project - see test-model/README.md for the
+    # benchmark. Same YOLO11m weights either way; this only trades some recall
+    # on faint damage for roughly 2.5-3x faster inference.
     MODEL_BACKEND = os.getenv("MODEL_BACKEND", "mock").lower()
     MODEL_PATH = os.getenv("MODEL_PATH", "")
     MODEL_NAME = os.getenv("MODEL_NAME", "autodent-yolo11m")
     MODEL_VERSION = os.getenv("MODEL_VERSION", "1.0.0")
     MODEL_CONFIDENCE_THRESHOLD = _float("MODEL_CONFIDENCE_THRESHOLD", 0.35)
     MODEL_IOU_THRESHOLD = _float("MODEL_IOU_THRESHOLD", 0.45)
-    MODEL_INPUT_SIZE = _int("MODEL_INPUT_SIZE", 1024)
+    MODEL_INPUT_SIZE = _int("MODEL_INPUT_SIZE", 640)
 
     # Enhancement 3: CLAHE contrast pass. Off by default - it helps on glare and
     # shadow but changes pixels the model was not trained on, so it is opt-in.
     MODEL_USE_CLAHE = _bool("MODEL_USE_CLAHE", False)
 
     # Enhancement 2: retry with TTA when the first pass finds nothing at all.
-    MODEL_FALLBACK_ENABLED = _bool("MODEL_FALLBACK_ENABLED", True)
+    # Off by default (was on) - it roughly doubles inference time on every image
+    # with no obvious damage. Still available per-inspection via `settings`.
+    MODEL_FALLBACK_ENABLED = _bool("MODEL_FALLBACK_ENABLED", False)
     MODEL_FALLBACK_MIN_CONF = _float("MODEL_FALLBACK_MIN_CONF", 0.15)
 
     # Test-time augmentation. Roughly triples inference time, so off by default.
@@ -112,7 +117,7 @@ class BaseConfig:
         "balanced": {
             "confidence": 0.35,
             "iou": 0.45,
-            "input_size": 1024,
+            "input_size": 640,
             "augment": False,
             "label": "Balanced",
             "description": "Standard for good-quality photos.",
@@ -120,7 +125,7 @@ class BaseConfig:
         "sensitive": {
             "confidence": 0.22,
             "iou": 0.45,
-            "input_size": 1024,
+            "input_size": 640,
             "augment": False,
             "label": "Sensitive",
             "description": "Finds faint scratches and shallow dents. More false positives.",
@@ -128,7 +133,7 @@ class BaseConfig:
         "strict": {
             "confidence": 0.50,
             "iou": 0.45,
-            "input_size": 1024,
+            "input_size": 640,
             "augment": False,
             "label": "Strict",
             "description": "Minimises false positives for formal claims.",

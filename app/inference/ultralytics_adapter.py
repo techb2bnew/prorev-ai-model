@@ -1,10 +1,13 @@
 """Adapter for the supplied YOLO11m model (weights/best.pt, Ultralytics).
 
 Mirrors the pipeline in DOCUMENTATION.md sections 3 and 7:
-  * predict at the caller's conf/iou/imgsz (documented defaults 0.35 / 0.45 / 1024)
+  * predict at the caller's conf/iou/imgsz (documented defaults 0.35 / 0.45 / 1024,
+    but MODEL_INPUT_SIZE now defaults to 640 - see test-model/README.md)
   * clamp boxes to the image and drop degenerate ones (< 2px)
   * optional CLAHE contrast pass for glare and shadow (enhancement 3)
-  * automatic low-confidence second pass with TTA when nothing is found (enhancement 2)
+  * optional low-confidence second pass with TTA when nothing is found
+    (enhancement 2; off by default via MODEL_FALLBACK_ENABLED - it roughly
+    doubles inference time whenever it fires)
   * class-aware NMS (section 3 step 5)
 
 One deliberate difference from the reference: the model is run at a low
@@ -18,6 +21,7 @@ from the weights file rather than being duplicated here.
 """
 
 import logging
+import os
 import time
 
 import numpy as np
@@ -60,6 +64,9 @@ class UltralyticsDetector(DamageDetector):
             import torch
 
             self._device = 0 if torch.cuda.is_available() else "cpu"
+            # Matches dent-detection: without this torch can under-use the
+            # CPU's cores on some hosts.
+            torch.set_num_threads(max(1, min(8, os.cpu_count() or 4)))
         except ImportError:
             self._device = "cpu"
 
@@ -96,15 +103,18 @@ class UltralyticsDetector(DamageDetector):
         return array
 
     def _run(self, image_np: np.ndarray, options: DetectionOptions, conf: float, augment: bool):
-        return self._model.predict(
-            source=image_np,
-            imgsz=options.input_size,
-            conf=conf,
-            iou=options.iou,
-            device=self._device,
-            augment=augment,
-            verbose=False,
-        )
+        import torch
+
+        with torch.inference_mode():
+            return self._model.predict(
+                source=image_np,
+                imgsz=options.input_size,
+                conf=conf,
+                iou=options.iou,
+                device=self._device,
+                augment=augment,
+                verbose=False,
+            )
 
     def _extract(self, results, width: int, height: int) -> list[RawDetection]:
         """Turn Ultralytics boxes into RawDetections, clamped to the image."""
